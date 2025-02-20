@@ -6,6 +6,7 @@ db.sqlite3
 *.py[co]
 */__pycache__/
 media
+.env
 
 */migrations/__pycache__/
 */migrations/*.py[co]
