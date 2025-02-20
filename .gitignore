@@ -1,0 +1,13 @@
+db.sqlite3
+*.log
+*.pot
+*.pyc
+*.mo
+*.py[co]
+*/__pycache__/
+media
+
+*/migrations/__pycache__/
+*/migrations/*.py[co]
+*/migrations/*.py
+
