@@ -65,19 +65,19 @@ Use (env.example) as a guide for environment variables </li>
 5. Create a Super User using 
 
 ```bash
-python manage.py createsuperuser
+python3 manage.py createsuperuser
 ```
 
 6. Migrate your DB using 
 
 ```bash
-python manage.py migrate
+python3 manage.py migrate
 ```
 
 7. To run the project use: 
 
 ```bash
- python manage.py runserver
+ python3 manage.py runserver
 ```
 
 3. Open the server using the link : 
