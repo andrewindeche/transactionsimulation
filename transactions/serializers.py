@@ -27,3 +27,8 @@ class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
         fields = ['id', 'transaction_type', 'amount', 'timestamp']
+        
+    def validate_amount(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Amount must be greater than zero.")
+        return value
