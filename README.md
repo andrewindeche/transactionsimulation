@@ -80,9 +80,27 @@ python3 manage.py migrate
  python3 manage.py runserver
 ```
 
-3. Open the server using the link : 
+8. Open the server using the link : 
 
 <b>http://localhost:8000</b>
+
+9. Open the Redis server using :
+
+```bash
+redis-cli
+```
+
+Check for cached keys
+
+```bash
+KEYS transaction_history_*
+```
+Inspect cached data
+
+```bash
+GET transaction_history_123
+
+```
 
 ## <h1> Endpoints</h1>
 
