@@ -7,7 +7,7 @@ import logging
 from django.db import transaction
 from django.db.models import F, Q
 from django.core.cache import cache
-from django.contrib.auth import authenticate
+from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ObjectDoesNotExist
 
 # Third-party imports
@@ -71,9 +71,9 @@ class UserLoginView(APIView):
 
     def post(self, request):
         """
-        Validates user credentials and returns 
-        access and refresh tokens on successful 
-        authentication.
+        Validates user credentials and 
+        returns access and refresh tokens 
+        on successful authentication.
         """
         username_or_email = request.data.get('username_or_email')
         password = request.data.get('password')
@@ -83,37 +83,44 @@ class UserLoginView(APIView):
 
         if not username_or_email or not password:
             return Response(
-            {'error': 'Username/Email and password are required'},
-            status=status.HTTP_400_BAD_REQUEST)
+                {'error': 'Username/Email and password are required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         user = None
         try:
             user = User.objects.get(Q(username=username_or_email) | Q(email=username_or_email))
             print(f"User found: {user.username}")
         except ObjectDoesNotExist:
             return Response(
-    {'error': 'Invalid username/email or password'},
-    status=status.HTTP_401_UNAUTHORIZED
-    )
-
+                {'error': 'Invalid username/email or password'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
         print(f"Authenticating with username: {user.username} and password: {password}")
-        user = authenticate(request, username=user.username, password=password)
-        print(f"Authenticated user: {user}")
-
-        if user is not None:
+        if check_password(password, user.password):
+            print("Password match!")
             if user.is_active:
-                refresh = RefreshToken.for_user(user)
-                return Response({
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                })
+                if isinstance(user, User):
+                    print(f"User is instance of User model: {isinstance(user, User)}")
+                    refresh = RefreshToken.for_user(user)
+                    return Response({
+                        'refresh': str(refresh),
+                        'access': str(refresh.access_token),
+                    })
+                else:
+                    print("User is not an instance of User model")
+                    return Response(
+                        {'error': 'User instance error'},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
             return Response(
                 {'error': 'User account is inactive'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
-
-
-        return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            print("Password does not match.")
+            return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 class AccountView(generics.RetrieveAPIView):
     """
