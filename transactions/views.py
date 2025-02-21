@@ -68,6 +68,7 @@ class AccountView(generics.RetrieveAPIView):
             return self.request.user.account
         except Account.DoesNotExist:
             raise NotFound("Account not found.")
+        
 
 class TransactionView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
@@ -85,12 +86,11 @@ class TransactionView(generics.CreateAPIView):
                 if account.balance < amount:
                     raise serializers.ValidationError("Insufficient balance for withdrawal.")
                 account.balance = F('balance') - amount 
-            else:  # 'deposit'
+            else:  
                 account.balance = F('balance') + amount
             
             account.save() 
 
-            # Save the transaction
             serializer.save(user=user)
       
 class TransactionHistoryView(generics.ListAPIView):
