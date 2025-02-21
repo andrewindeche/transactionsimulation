@@ -9,7 +9,6 @@ from django.core.cache import cache
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-# Create your models here.
 class User(AbstractUser):
     """
     User Model containing email, first_name, last_name fields
@@ -36,7 +35,6 @@ class User(AbstractUser):
         help_text=('Specific permissions for this user.'),
         verbose_name=('user permissions'),
     )
-
 
 class Account(models.Model):
     """
