@@ -24,6 +24,14 @@ class UserRegisterView(generics.CreateAPIView):
     def perform_create(self, serializer):
         if User.objects.filter(username=serializer.validated_data['username']).exists():
             raise ValidationError("A user with this username already exists.")
+        
+        email = serializer.validated_data.get('email')
+        password = serializer.validated_data.get('password')
+        
+        if not email:
+            raise ValidationError({"email": "Email is required."})
+        if not password:
+            raise ValidationError({"password": "Password is required."})
         serializer.save()
 
 class UserLoginView(APIView):
@@ -33,6 +41,10 @@ class UserLoginView(APIView):
     def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
+        
+        if not username or not password:
+            return Response({'error': 'Username and password are required'}, status=status.HTTP_400_BAD_REQUEST)
+        
         user = authenticate(username=username, password=password)
         if user is not None:
             if user.is_active:
@@ -51,7 +63,10 @@ class AccountView(generics.RetrieveAPIView):
     serializer_class = AccountSerializer
 
     def get_object(self):
-        return self.request.user.account
+        try:
+            return self.request.user.account
+        except Account.DoesNotExist:
+            raise NotFound("Account not found.")
 
 class TransactionView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
