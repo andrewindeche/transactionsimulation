@@ -10,6 +10,13 @@
 ## <h1> Description</h1>
 <p>The aim of the project is to build a transaction simulation api that authenticates users, enables user to transact,view balances and retrieve transaction history </p>
 
+## <h1> Features</h1>
+<ul>
+<li>Admin dashboard to view lists of users and transactions,blacklist tokens</li>
+<li>Redis for cache management of transactions</li>
+<li>Throttler to limit sign up and login attempts and pagination</li>
+</ul>
+
 ## <h1> Set up Instructions</h1>
 <p><b>Github</b></p>
 <ul>
@@ -80,18 +87,97 @@ python3 manage.py migrate
  python3 manage.py runserver
 ```
 
-3. Open the server using the link : 
+8. Open the server using the link : 
 
 <b>http://localhost:8000</b>
 
+9. Open the Redis server using :
+
+```bash
+redis-cli
+```
+
+Check for cached keys
+
+```bash
+KEYS transaction_history_*
+```
+Inspect cached data
+
+```bash
+GET transaction_history_123
+```
+## <h1> Indexes Applied to optimize database</h1>
+-- speed up queries that filter or join the Transaction model based on the user field
+CREATE INDEX idx_transaction_user ON transactions_transaction(user_id);
+
+--  improve the speed of queries filtering by transaction_type
+Retrieving all deposits or withdrawals from the Transaction table.
+Running reports or analyses that group or count transactions by type
+CREATE INDEX idx_transaction_type ON transactions_transaction(transaction_type);
+
+--  This index is crucial for speeding up queries that filter by the user's email address
+CREATE INDEX idx_user_email ON transactions_user(email);
+
+## <h1> Throttle Rate Limits</h1>
+API calls have been limited for logins and sigups at a daily rate
+        'anon': '40/day', 
+        'user': '40/day',
+        'login': '50/minute',
+        'signup': '60/minute'
+
+
 ## <h1> Endpoints</h1>
 
-1. Logging in:
-<p><b>http://localhost:8000/api/login/</b></p>
+1. Signing up:
+<p><b>POST:http://localhost:8000/api/register/</b></p>
+    example raw payload:
+    {
+        "username": "paul",
+        "email":"paul@abc.com",
+        "first_name":"Paul",
+        "last_name":"Walker",
+        "password":"Complexpasword#"
+     }
 
-2. Signing up:
+2. Logging in:
+<p><b>POST:http://localhost:8000/api/login/</b></p>
+    example raw payload:
+    {
+        "username_or_email": "username",
+        "password":"Password35$"
+    }
 
-<p><b>http://localhost:8000/api/register/</b></p>
+3. Refresh Token:
+<p><b>POST:http://localhost:8000/api/token/refresh/</b></p>
+    example raw payload:
+    {
+        "token":"TOKEN-ABC"
+    }
+
+4. Get Account Details:
+<p><b>GET: http://localhost:8000/api/account/</b></p>
+    Headers: Authorization: Bearer <your_jwt_access_token>
+    All users start with 1000.0
+
+5.Create a Transaction (Deposit/Withdrawal):
+<p><b>POST: http://localhost:8000/api/transaction/</b></p>
+    example raw payload:
+    Deposit
+    {
+    "transaction_type": "deposit",
+    "amount": 100.50
+    }
+
+    Withdrawal
+    {
+    "transaction_type": "withdrawal",
+    "amount": 50.00
+    }
+
+6.Get Transaction History:
+<p><b>GET: http://localhost:8000/api/transactions/</b></p>
+Authorization: Bearer <your_jwt_access_token>
 
 
 ## <h1> Author </h1>
