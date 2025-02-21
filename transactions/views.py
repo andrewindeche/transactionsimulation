@@ -54,12 +54,13 @@ class UserRegisterView(generics.CreateAPIView):
             user = serializer.save()
             print(f"User created: {user.username}")
 
-            if not Account.objects.filter(user=user).exists():
-                Account.objects.create(user=user)
-                print(f"Account created for user: {user.username}")
+            if not Account.objects.filter(user=user).exists(): # pylint: disable=no-member
+                Account.objects.create(user=user) # pylint: disable=no-member
+                print(f"Account created for user: {user.username}") # pylint: disable=no-member
         except Exception as e:
             print(f"Error during user creation: {e}")
-            raise ValidationError(f"Failed to create user: {str(e)}")
+            raise ValidationError(f"Failed to create user: {str(e)}") from e
+
 
 class UserLoginView(APIView):
     """
@@ -119,24 +120,25 @@ class AccountView(generics.RetrieveAPIView):
     View to retrieve the authenticated user's account details.
     """
     permission_classes = [IsAuthenticated]
-    queryset = Account.objects.all()
+    queryset = Account.objects.all() # pylint: disable=no-member
     serializer_class = AccountSerializer
 
+    # pylint: disable=no-member
     def get_object(self):
         """
         Retrieves the user's associated account.
         """
         try:
             return self.request.user.account
-        except Account.DoesNotExist:
-            raise NotFound("Account not found.")
+        except Account.DoesNotExist as exc:
+            raise NotFound("Account not found.")from exc
 
 class TransactionView(generics.CreateAPIView):
     """
     View to handle creating a transaction (either deposit or withdrawal).
     """
     permission_classes = [IsAuthenticated]
-    queryset = Transaction.objects.all()
+    queryset = Transaction.objects.all() # pylint: disable=no-member
     serializer_class = TransactionSerializer
 
     def perform_create(self, serializer):
@@ -144,7 +146,7 @@ class TransactionView(generics.CreateAPIView):
         Performs the transaction, adjusting account balance.
         """
         user = self.request.user
-        account = Account.objects.select_for_update().get(user=user)
+        account = Account.objects.select_for_update().get(user=user) # pylint: disable=no-member
 
         with transaction.atomic():
             amount = serializer.validated_data['amount']
@@ -178,8 +180,8 @@ class TransactionHistoryView(generics.ListAPIView):
             logger.info("Returning cached transaction history for user %s", user.id)
             return cached_history
 
-        queryset = Transaction.objects.filter(user=user)
-        serialized_data = TransactionSerializer(queryset, many=True).data
+        queryset = Transaction.objects.filter(user=user) # pylint: disable=no-member
+        serialized_data = TransactionSerializer(queryset, many=True).data # pylint: disable=no-member
         cache.set(cache_key, serialized_data, timeout=cache_timeout)
         logger.info("Cached transaction history for user %s", user.id)
 

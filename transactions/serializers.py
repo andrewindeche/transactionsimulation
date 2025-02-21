@@ -59,7 +59,7 @@ class UserSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             password=validated_data['password']
         )
-        Account.objects.create(user=user)
+        Account.objects.create(user=user) # pylint: disable=no-member
         return user
 
 class AccountSerializer(serializers.ModelSerializer):

@@ -89,7 +89,7 @@ class Transaction(models.Model):
         """
         Validate and save the transaction.
         """
-        account = self.user.account
+        account = self.user.account # pylint: disable=no-member
         if self.transaction_type == 'withdrawal' and account.get_balance() < self.amount:
             raise ValueError('Insufficient funds.')
 
@@ -98,7 +98,9 @@ class Transaction(models.Model):
 
         super().save(*args, **kwargs)
 
-        balance_change = self.amount if self.transaction_type == 'deposit' else -self.amount
+        balance_change = Decimal(self.amount)
+        if self.transaction_type != 'deposit':
+            balance_change = -balance_change
         account.balance = F('balance') + balance_change
         account.save()
 

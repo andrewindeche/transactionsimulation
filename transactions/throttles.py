@@ -1,3 +1,7 @@
+"""
+This module contains the custom throttling classes for controlling 
+rate limits on API views based on user actions.
+"""
 from rest_framework.throttling import UserRateThrottle
 
 class LoginAttemptThrottle(UserRateThrottle):
