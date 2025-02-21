@@ -74,6 +74,9 @@ class TransactionView(generics.CreateAPIView):
     serializer_class = TransactionSerializer
 
     def perform_create(self, serializer):
+        account = self.request.user.account
+        if account.balance < serializer.validated_data['amount']:
+            raise ValidationError("Insufficient balance.")
         serializer.save(user=self.request.user)
       
 class TransactionHistoryView(generics.ListAPIView):
