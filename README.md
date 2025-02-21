@@ -119,7 +119,7 @@ CREATE INDEX idx_transaction_type ON transactions_transaction(transaction_type);
 --  This index is crucial for speeding up queries that filter by the user's email address
 CREATE INDEX idx_user_email ON transactions_user(email);
 
-## <h1> Throtle Rate Limits</h1>
+## <h1> Throttle Rate Limits</h1>
 API calls have been limited for logins and sigups at a daily rate
         'anon': '40/day', 
         'user': '40/day',
