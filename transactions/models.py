@@ -43,7 +43,7 @@ class Account(models.Model):
     Account Model for checking user details
     """
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    balance = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    balance = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('1000.00'))
 
     def get_balance(self):
         """
