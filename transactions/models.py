@@ -9,7 +9,6 @@ from django.core.cache import cache
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-# Create your models here.
 class User(AbstractUser):
     """
     User Model containing email, first_name, last_name fields
@@ -36,7 +35,6 @@ class User(AbstractUser):
         help_text=('Specific permissions for this user.'),
         verbose_name=('user permissions'),
     )
-
 
 class Account(models.Model):
     """
@@ -92,9 +90,6 @@ class Transaction(models.Model):
         account = self.user.account # pylint: disable=no-member
         if self.transaction_type == 'withdrawal' and account.get_balance() < self.amount:
             raise ValueError('Insufficient funds.')
-
-        if self.transaction_type == 'deposit' and account.get_balance() + self.amount > 500:
-            raise ValueError('Account balance limit exceeded.')
 
         super().save(*args, **kwargs)
 

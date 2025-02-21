@@ -77,10 +77,6 @@ class UserLoginView(APIView):
         """
         username_or_email = request.data.get('username_or_email')
         password = request.data.get('password')
-
-        print(f"Received username_or_email: {username_or_email}")
-        print(f"Received password: {password}")
-
         if not username_or_email or not password:
             return Response(
                 {'error': 'Username/Email and password are required'},
@@ -90,16 +86,13 @@ class UserLoginView(APIView):
         user = None
         try:
             user = User.objects.get(Q(username=username_or_email) | Q(email=username_or_email))
-            print(f"User found: {user.username}")
         except ObjectDoesNotExist:
             return Response(
                 {'error': 'Invalid username/email or password'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-        print(f"Authenticating with username: {user.username} and password: {password}")
         if check_password(password, user.password):
-            print("Password match!")
             if user.is_active:
                 if isinstance(user, User):
                     print(f"User is instance of User model: {isinstance(user, User)}")
@@ -109,7 +102,6 @@ class UserLoginView(APIView):
                         'access': str(refresh.access_token),
                     })
                 else:
-                    print("User is not an instance of User model")
                     return Response(
                         {'error': 'User instance error'},
                         status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -153,9 +145,10 @@ class TransactionView(generics.CreateAPIView):
         Performs the transaction, adjusting account balance.
         """
         user = self.request.user
-        account = Account.objects.select_for_update().get(user=user) # pylint: disable=no-member
-
         with transaction.atomic():
+            # Ensure account selection is within the transaction
+            account = Account.objects.select_for_update().get(user=user) # pylint: disable=no-member
+
             amount = serializer.validated_data['amount']
             if serializer.validated_data['transaction_type'] == 'withdrawal':
                 if account.balance < amount:

@@ -90,9 +90,9 @@ class AccountSerializer(serializers.ModelSerializer):
         - `id`: The unique identifier of the account.
         - `user`: The user associated with this account.
         - `balance`: The current balance of the account.
+         """
         model = Account
         fields = ['id', 'user', 'balance']
-         """
 
 class TransactionSerializer(serializers.ModelSerializer):
     """
