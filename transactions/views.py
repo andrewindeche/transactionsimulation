@@ -137,7 +137,7 @@ class TransactionView(generics.CreateAPIView):
     View to handle creating a transaction (either deposit or withdrawal).
     """
     permission_classes = [IsAuthenticated]
-    queryset = Transaction.objects.all()
+    queryset = Transaction.objects.all() # pylint: disable=no-member
     serializer_class = TransactionSerializer
 
     def perform_create(self, serializer):
@@ -147,7 +147,7 @@ class TransactionView(generics.CreateAPIView):
         user = self.request.user
         with transaction.atomic():
             # Ensure account selection is within the transaction
-            account = Account.objects.select_for_update().get(user=user)
+            account = Account.objects.select_for_update().get(user=user) # pylint: disable=no-member
 
             amount = serializer.validated_data['amount']
             if serializer.validated_data['transaction_type'] == 'withdrawal':

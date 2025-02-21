@@ -91,9 +91,6 @@ class Transaction(models.Model):
         if self.transaction_type == 'withdrawal' and account.get_balance() < self.amount:
             raise ValueError('Insufficient funds.')
 
-        if self.transaction_type == 'deposit' and account.get_balance() + self.amount > 500:
-            raise ValueError('Account balance limit exceeded.')
-
         super().save(*args, **kwargs)
 
         balance_change = Decimal(self.amount)
