@@ -1,4 +1,6 @@
-# Standard library imports
+"""
+Import for logging
+"""
 import logging
 
 # Django imports
@@ -10,12 +12,12 @@ from django.core.exceptions import ObjectDoesNotExist
 
 # Third-party imports
 from rest_framework import generics, status
+from rest_framework.throttling import AnonRateThrottle
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.throttling import AnonRateThrottle
 
 # Local imports
 from .serializers import UserSerializer, TransactionSerializer, AccountSerializer
@@ -33,6 +35,7 @@ class UserRegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
+    throttle_classes = [SignupAttemptThrottle,AnonRateThrottle]
 
     @transaction.atomic
     def perform_create(self, serializer):
@@ -63,7 +66,7 @@ class UserLoginView(APIView):
     View for user login, which authenticates the user and returns JWT tokens.
     """
     permission_classes = [AllowAny]
-    #throttle_classes = [LoginAttemptThrottle]
+    throttle_classes = [LoginAttemptThrottle]
 
     def post(self, request):
         """

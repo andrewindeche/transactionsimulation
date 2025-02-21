@@ -1,3 +1,8 @@
+"""
+Utility functions and serializers for managing transactions and account balances.
+Imports:
+    - Decimal from `decimal`: For accurate representation of monetary values.
+"""
 from decimal import Decimal
 from django.db.models import F
 from django.core.cache import cache
