@@ -67,6 +67,10 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '15/day', 
+        'user': '15/day'
+    }
 }
 
 ROOT_URLCONF = 'transaction_simulation.urls'
