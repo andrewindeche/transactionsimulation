@@ -12,4 +12,5 @@ virtual
 */migrations/__pycache__/
 */migrations/*.py[co]
 */migrations/*.py
-
+transaction_simulation/settings.py
+.vscode/settings.json
