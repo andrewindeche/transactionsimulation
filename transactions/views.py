@@ -3,10 +3,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 from .models import User, Transaction, Account
+from rest_framework.permissions import AllowAny
 from .serializers import UserSerializer, TransactionSerializer, AccountSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.throttling import AnonRateThrottle
+from .throttles import SignupAttemptThrottle 
+from .throttles import LoginAttemptThrottle 
 import logging
 
 logger = logging.getLogger(__name__)
@@ -15,6 +19,7 @@ logger = logging.getLogger(__name__)
 class UserRegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    throttle_classes = [SignupAttemptThrottle, AnonRateThrottle]
     
     def perform_create(self, serializer):
         if User.objects.filter(username=serializer.validated_data['username']).exists():
@@ -22,6 +27,9 @@ class UserRegisterView(generics.CreateAPIView):
         serializer.save()
 
 class UserLoginView(APIView):
+    permission_classes = [AllowAny]
+    throttle_classes = [LoginAttemptThrottle]
+    
     def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
