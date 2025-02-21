@@ -27,56 +27,75 @@ logger = logging.getLogger(__name__)
 
 class UserRegisterView(generics.CreateAPIView):
     """
-    API view for registering a new user. Handles the creation of a new user 
+    API view for registering a new user. Handles the creation of a new user
     by validating input and automatically creating an associated account.
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
+    @transaction.atomic
     def perform_create(self, serializer):
         """
-        Handles user creation and associated account creation. This method is 
+        Handles user creation and associated account creation. This method is
         called when the serializer is valid and the user is ready to be created.
 
         Args:
-            serializer (UserSerializer): The validated serializer containing 
+            serializer (UserSerializer): The validated serializer containing
                                           the user data.
 
         Returns:
             None: Automatically handles user and account creation.
         """
-        user = serializer.save()
+        try:
+            user = serializer.save()
+            print(f"User created: {user.username}")
 
-        if not Account.objects.filter(user=user).exists():
-            Account.objects.create(user=user)
-        
+            if not Account.objects.filter(user=user).exists():
+                Account.objects.create(user=user)
+                print(f"Account created for user: {user.username}")
+        except Exception as e:
+            print(f"Error during user creation: {e}")
+            raise ValidationError(f"Failed to create user: {str(e)}")
 
 class UserLoginView(APIView):
     """
     View for user login, which authenticates the user and returns JWT tokens.
     """
     permission_classes = [AllowAny]
-    throttle_classes = [LoginAttemptThrottle]
+    #throttle_classes = [LoginAttemptThrottle]
 
     def post(self, request):
         """
-        Validates user credentials 
-        and returns access 
-        and refresh tokens on successful authentication.
+        Validates user credentials and returns 
+        access and refresh tokens on successful 
+        authentication.
         """
         username_or_email = request.data.get('username_or_email')
         password = request.data.get('password')
 
-        if not username_or_email or not password:
-            return Response({'error': 'Username/Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
+        print(f"Received username_or_email: {username_or_email}")
+        print(f"Received password: {password}")
 
+        if not username_or_email or not password:
+            return Response(
+            {'error': 'Username/Email and password are required'},
+            status=status.HTTP_400_BAD_REQUEST)
+        user = None
         try:
             user = User.objects.get(Q(username=username_or_email) | Q(email=username_or_email))
+            print(f"User found: {user.username}")
         except ObjectDoesNotExist:
-            return Response({'error': 'Invalid username/email or password'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+    {'error': 'Invalid username/email or password'},
+    status=status.HTTP_401_UNAUTHORIZED
+    )
 
+
+        print(f"Authenticating with username: {user.username} and password: {password}")
         user = authenticate(request, username=user.username, password=password)
+        print(f"Authenticated user: {user}")
+
         if user is not None:
             if user.is_active:
                 refresh = RefreshToken.for_user(user)
@@ -84,7 +103,12 @@ class UserLoginView(APIView):
                     'refresh': str(refresh),
                     'access': str(refresh.access_token),
                 })
-            return Response({'error': 'User account is inactive'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {'error': 'User account is inactive'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 class AccountView(generics.RetrieveAPIView):
