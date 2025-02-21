@@ -25,7 +25,7 @@
 <li> Unzip the file and add the Project folder to your IDE/Compiler</li>
 </ul>
 
-<p><b>Docker</b></p>
+<p><b>Django version</b></p>
 Python 3.13.2 Django==5.1.6
 
 1. Create an .env environment on the Django root folder and add the recessary environment variables. 
