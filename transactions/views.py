@@ -38,7 +38,7 @@ class UserRegisterView(generics.CreateAPIView):
     def perform_create(self, serializer):
         user = serializer.save()
         if User.objects.filter(username=serializer.validated_data['username']).exists():
-            raise ValidationError("A user with this username already exists.")      
+            raise ValidationError("A user with this username already exists.")
         email = serializer.validated_data.get('email')
         password = serializer.validated_data.get('password')
 
@@ -58,7 +58,9 @@ class UserLoginView(APIView):
 
     def post(self, request):
         """
-        Validates user credentials and returns access and refresh tokens on successful authentication.
+        Validates user credentials 
+        and returns access 
+        and refresh tokens on successful authentication.
         """
         username_or_email = request.data.get('username_or_email')
         password = request.data.get('password')
@@ -118,7 +120,7 @@ class TransactionView(generics.CreateAPIView):
             amount = serializer.validated_data['amount']
             if serializer.validated_data['transaction_type'] == 'withdrawal':
                 if account.balance < amount:
-                    raise serializers.ValidationError("Insufficient balance for withdrawal.")
+                    raise ValidationError("Insufficient balance for withdrawal.")
                 account.balance = F('balance') - amount
             else:
                 account.balance = F('balance') + amount
@@ -143,12 +145,12 @@ class TransactionHistoryView(generics.ListAPIView):
 
         cached_history = cache.get(cache_key)
         if cached_history:
-            logger.info(f"Returning cached transaction history for user {user.id}")
+            logger.info("Returning cached transaction history for user %s", user.id)
             return cached_history
 
         queryset = Transaction.objects.filter(user=user)
         serialized_data = TransactionSerializer(queryset, many=True).data
         cache.set(cache_key, serialized_data, timeout=cache_timeout)
-        logger.info(f"Cached transaction history for user {user.id}")
+        logger.info("Cached transaction history for user %s", user.id)
 
         return queryset
