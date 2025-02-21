@@ -106,8 +106,26 @@ Inspect cached data
 
 ```bash
 GET transaction_history_123
-
 ```
+## <h1> Indexes Applied to optimize database</h1>
+-- speed up queries that filter or join the Transaction model based on the user field
+CREATE INDEX idx_transaction_user ON transactions_transaction(user_id);
+
+--  improve the speed of queries filtering by transaction_type
+Retrieving all deposits or withdrawals from the Transaction table.
+Running reports or analyses that group or count transactions by type
+CREATE INDEX idx_transaction_type ON transactions_transaction(transaction_type);
+
+--  This index is crucial for speeding up queries that filter by the user's email address
+CREATE INDEX idx_user_email ON transactions_user(email);
+
+## <h1> Throtle Rate Limits</h1>
+API calls have been limited for logins and sigups at a daily rate
+        'anon': '15/day', 
+        'user': '15/day',
+        'login': '5/minute',
+        'signup': '20/minute'
+
 
 ## <h1> Endpoints</h1>
 
