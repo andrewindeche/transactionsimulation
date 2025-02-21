@@ -8,7 +8,6 @@ class User(AbstractUser):
     last_name = models.CharField(max_length=30)
 
     REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
-    
     groups = models.ManyToManyField(
         'auth.Group',
         related_name='transactions_user_set', 
@@ -24,7 +23,6 @@ class User(AbstractUser):
         help_text=('Specific permissions for this user.'),
         verbose_name=('user permissions'),
     )
-    
 class Account(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -33,8 +31,7 @@ class Account(models.Model):
         return self.balance
 
     def __str__(self):
-        return f"Account of {self.user.username} with balance {self.balance}"
-    
+        return f"Account of {self.user.username} with balance {self.balance}"    
 class Transaction(models.Model):
     TRANSACTION_TYPES = [
         ('deposit', 'Deposit'),
@@ -59,3 +56,12 @@ class Transaction(models.Model):
         super().save(*args, **kwargs)
         self.user.account.balance = self.user.account.get_balance() + self.amount if self.transaction_type == 'deposit' else self.user.account.get_balance() - self.amount
         self.user.account.save()
+        
+    def clear_transaction_history_cache(user_id):
+        cache_key = f"transaction_history_{user_id}"
+        cache.delete(cache_key)
+
+    def create_transaction(user, amount, transaction_type):
+        transaction = Transaction.objects.create(user=user, amount=amount, type=transaction_type)
+        
+        clear_transaction_history_cache(user.id)
