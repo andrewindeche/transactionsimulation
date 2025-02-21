@@ -85,10 +85,10 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '15/day', 
-        'user': '15/day',
-        'login': '5/minute',
-        'signup': '20/minute'
+        'anon': '40/day', 
+        'user': '40/day',
+        'login': '50/minute',
+        'signup': '60/minute'
     }
 }
 
