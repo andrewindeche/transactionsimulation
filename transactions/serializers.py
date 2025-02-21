@@ -3,6 +3,7 @@
 Serializers for the transaction simulation application.
 """
 from rest_framework import serializers
+from django.contrib.auth.password_validation import validate_password
 from .models import User, Account, Transaction
 
 class UserSerializer(serializers.ModelSerializer):
@@ -22,6 +23,22 @@ class UserSerializer(serializers.ModelSerializer):
             'email': {'required': True},
             'password': {'write_only': True, 'required': True}
         }
+
+    def validate_password(self, value):
+        """
+        Validate the provided password using Django's built-in validators.
+
+        Args:
+            value (str): The password to validate.
+
+        Returns:
+            str: The validated password.
+
+        Raises:
+            serializers.ValidationError: If the password does not meet the required criteria.
+        """
+        validate_password(value)
+        return value
 
     def validate(self, attrs):
         """
