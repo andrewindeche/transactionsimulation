@@ -121,10 +121,10 @@ CREATE INDEX idx_user_email ON transactions_user(email);
 
 ## <h1> Throtle Rate Limits</h1>
 API calls have been limited for logins and sigups at a daily rate
-        'anon': '15/day', 
-        'user': '15/day',
-        'login': '5/minute',
-        'signup': '20/minute'
+        'anon': '40/day', 
+        'user': '40/day',
+        'login': '50/minute',
+        'signup': '60/minute'
 
 
 ## <h1> Endpoints</h1>
