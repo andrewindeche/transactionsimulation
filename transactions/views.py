@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 from .models import User, Transaction, Account
 from rest_framework.permissions import AllowAny
+from django.db.models import F
 from .serializers import UserSerializer, TransactionSerializer, AccountSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
@@ -74,10 +75,23 @@ class TransactionView(generics.CreateAPIView):
     serializer_class = TransactionSerializer
 
     def perform_create(self, serializer):
-        account = self.request.user.account
-        if account.balance < serializer.validated_data['amount']:
-            raise ValidationError("Insufficient balance.")
-        serializer.save(user=self.request.user)
+        user = self.request.user
+        account = Account.objects.select_for_update().get(user=user)  # Lock the account row
+
+        with transaction.atomic():
+            amount = serializer.validated_data['amount']
+
+            if serializer.validated_data['transaction_type'] == 'withdrawal':
+                if account.balance < amount:
+                    raise serializers.ValidationError("Insufficient balance for withdrawal.")
+                account.balance = F('balance') - amount 
+            else:  # 'deposit'
+                account.balance = F('balance') + amount
+            
+            account.save() 
+
+            # Save the transaction
+            serializer.save(user=user)
       
 class TransactionHistoryView(generics.ListAPIView):
     serializer_class = TransactionSerializer
