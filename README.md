@@ -10,6 +10,13 @@
 ## <h1> Description</h1>
 <p>The aim of the project is to build a transaction simulation api that authenticates users, enables user to transact,view balances and retrieve transaction history </p>
 
+## <h1> Features</h1>
+<ul>
+<li>Admin dashboard to view lists of users and transactions,blacklist tokens</li>
+<li>Redis for cache management of transactions</li>
+<li>Throttler to limit sign up and login attempts and pagination</li>
+</ul>
+
 ## <h1> Set up Instructions</h1>
 <p><b>Github</b></p>
 <ul>
@@ -104,13 +111,31 @@ GET transaction_history_123
 
 ## <h1> Endpoints</h1>
 
-1. Logging in:
-<p><b>http://localhost:8000/api/login/</b></p>
+1. Signing up:
+<p><b>POST:http://localhost:8000/api/register/</b></p>
+    example raw payload:
+    {
+        "username": "paul",
+        "email":"paul@abc.com",
+        "first_name":"Paul",
+        "last_name":"Walker",
+        "password":"Complexpasword#"
+     }
 
-2. Signing up:
+2. Logging in:
+<p><b>POST:http://localhost:8000/api/login/</b></p>
+    example raw payload:
+    {
+        "username_or_email": "username",
+        "password":"Password35$"
+    }
 
-<p><b>http://localhost:8000/api/register/</b></p>
-
+3. Refresh Token:
+<p><b>POST:http://localhost:8000/api/token/refresh/</b></p>
+    example raw payload:
+    {
+        "token":"TOKEN-ABC"
+    }
 
 ## <h1> Author </h1>
 Built by <b>Andrew Indeche</b>
