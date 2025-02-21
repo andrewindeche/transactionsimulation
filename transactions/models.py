@@ -1,11 +1,10 @@
 from decimal import Decimal
+from django.db.models import F
 from django.core.cache import cache
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
-from django.contrib.auth.models import AbstractUser
-
 class User(AbstractUser):
     """
     User Model containing email, first_name, last_name fields
@@ -27,7 +26,7 @@ class User(AbstractUser):
     )
     user_permissions = models.ManyToManyField(
         'auth.Permission',
-        related_name='transactions_user_permissions', 
+        related_name='transactions_user_permissions',
         blank=True,
         help_text=('Specific permissions for this user.'),
         verbose_name=('user permissions'),
@@ -86,22 +85,16 @@ class Transaction(models.Model):
         Validate and save the transaction.
         """
         account = self.user.account
-
-        # Ensure sufficient funds for withdrawals
         if self.transaction_type == 'withdrawal' and account.get_balance() < self.amount:
             raise ValueError('Insufficient funds.')
 
-        # Ensure deposit doesn't exceed limit
         if self.transaction_type == 'deposit' and account.get_balance() + self.amount > 500:
             raise ValueError('Account balance limit exceeded.')
 
-        # Perform the transaction
         super().save(*args, **kwargs)
 
-        # Update account balance based on the transaction type
         balance_change = self.amount if self.transaction_type == 'deposit' else -self.amount
         account.balance = F('balance') + balance_change
         account.save()
 
         clear_transaction_history_cache(account.user.id)
-
