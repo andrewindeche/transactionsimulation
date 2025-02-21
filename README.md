@@ -158,6 +158,7 @@ API calls have been limited for logins and sigups at a daily rate
 4. Get Account Details:
 <p><b>GET: http://localhost:8000/api/account/</b></p>
     Headers: Authorization: Bearer <your_jwt_access_token>
+    All users start with 1000.0
 
 5.Create a Transaction (Deposit/Withdrawal):
 <p><b>POST: http://localhost:8000/api/transaction/</b></p>
