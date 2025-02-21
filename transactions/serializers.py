@@ -11,7 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
             'email': {'required': True},
             'password': {'write_only': True, 'required': True}
         }
-        
+
     def validate_password(self, value):
         """
         Django inbuilt password validation
@@ -29,17 +29,17 @@ class UserSerializer(serializers.ModelSerializer):
         )
         Account.objects.create(user=user)
         return user
-    
+
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
         fields = ['id', 'user', 'balance']
-        
+
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
         fields = ['id', 'transaction_type', 'amount', 'timestamp']
-        
+
     def validate_amount(self, value):
         if value <= 0:
             raise serializers.ValidationError("Amount must be greater than zero.")

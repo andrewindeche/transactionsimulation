@@ -10,7 +10,7 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
     groups = models.ManyToManyField(
         'auth.Group',
-        related_name='transactions_user_set', 
+        related_name='transactions_user_set',
         blank=True,
         help_text=('The groups this user belongs to. A user will get all permissions '
                    'granted to each of their groups.'),
@@ -31,7 +31,12 @@ class Account(models.Model):
         return self.balance
 
     def __str__(self):
-        return f"Account of {self.user.username} with balance {self.balance}"    
+        return f"Account of {self.user.username} with balance {self.balance}"
+
+def clear_transaction_history_cache(user_id):
+    cache_key = f"transaction_history_{user_id}"
+    cache.delete(cache_key)
+
 class Transaction(models.Model):
     TRANSACTION_TYPES = [
         ('deposit', 'Deposit'),
@@ -47,21 +52,27 @@ class Transaction(models.Model):
         return f"{self.transaction_type} of {self.amount}"
 
     def save(self, *args, **kwargs):
+        """
+        Validate transaction before saving
+        """
         if self.transaction_type == 'withdrawal':
             if self.user.account.get_balance() - self.amount < 0:
                 raise ValueError('Insufficient funds.')
         elif self.transaction_type == 'deposit':
             if self.user.account.get_balance() + self.amount > 500:
                 raise ValueError('Account balance limit exceeded.')
-        super().save(*args, **kwargs)
-        self.user.account.balance = self.user.account.get_balance() + self.amount if self.transaction_type == 'deposit' else self.user.account.get_balance() - self.amount
-        self.user.account.save()
-        
-    def clear_transaction_history_cache(user_id):
-        cache_key = f"transaction_history_{user_id}"
-        cache.delete(cache_key)
 
+        super().save(*args, **kwargs)
+
+        if self.transaction_type == 'deposit':
+            self.user.account.balance += self.amount
+        else:
+            self.user.account.balance -= self.amount
+        self.user.account.save()
+
+        clear_transaction_history_cache(self.user.id)
+
+    @staticmethod
     def create_transaction(user, amount, transaction_type):
-        transaction = Transaction.objects.create(user=user, amount=amount, type=transaction_type)
-        
+        transaction = Transaction.objects.create(user=user, amount=amount, transaction_type=transaction_type)
         clear_transaction_history_cache(user.id)

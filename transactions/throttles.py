@@ -4,11 +4,9 @@ class LoginAttemptThrottle(UserRateThrottle):
     """
     Custom class to throttle login attempts
     """
-    scope = 'login'  
-    
+    scope = 'login'
 class SignupAttemptThrottle(UserRateThrottle):
     """
     Custom class to throttle signup attempts
     """
     scope = 'signup'
-    
