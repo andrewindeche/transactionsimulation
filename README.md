@@ -155,5 +155,29 @@ API calls have been limited for logins and sigups at a daily rate
         "token":"TOKEN-ABC"
     }
 
+4. Get Account Details:
+<p><b>GET: http://localhost:8000/api/account/</b></p>
+    Headers: Authorization: Bearer <your_jwt_access_token>
+
+5.Create a Transaction (Deposit/Withdrawal):
+<p><b>POST: http://localhost:8000/api/transaction/</b></p>
+    example raw payload:
+    Deposit
+    {
+    "transaction_type": "deposit",
+    "amount": 100.50
+    }
+
+    Withdrawal
+    {
+    "transaction_type": "withdrawal",
+    "amount": 50.00
+    }
+
+6.Get Transaction History:
+<p><b>GET: http://localhost:8000/api/transactions/</b></p>
+Authorization: Bearer <your_jwt_access_token>
+
+
 ## <h1> Author </h1>
 Built by <b>Andrew Indeche</b>
