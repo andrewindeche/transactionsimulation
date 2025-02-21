@@ -27,27 +27,30 @@ logger = logging.getLogger(__name__)
 
 class UserRegisterView(generics.CreateAPIView):
     """
-    View to register a new user. It validates input, creates the user, 
-    and creates an associated account.
+    API view for registering a new user. Handles the creation of a new user 
+    by validating input and automatically creating an associated account.
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
-    throttle_classes = [SignupAttemptThrottle, AnonRateThrottle]
 
     def perform_create(self, serializer):
+        """
+        Handles user creation and associated account creation. This method is 
+        called when the serializer is valid and the user is ready to be created.
+
+        Args:
+            serializer (UserSerializer): The validated serializer containing 
+                                          the user data.
+
+        Returns:
+            None: Automatically handles user and account creation.
+        """
         user = serializer.save()
-        if User.objects.filter(username=serializer.validated_data['username']).exists():
-            raise ValidationError("A user with this username already exists.")
-        email = serializer.validated_data.get('email')
-        password = serializer.validated_data.get('password')
 
-        if not email:
-            raise ValidationError({"email": "Email is required."})
-        if not password:
-            raise ValidationError({"password": "Password is required."})
-
-        Account.objects.create(user=user)
+        if not Account.objects.filter(user=user).exists():
+            Account.objects.create(user=user)
+        
 
 class UserLoginView(APIView):
     """
