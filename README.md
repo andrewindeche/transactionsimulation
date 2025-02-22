@@ -109,16 +109,19 @@ GET transaction_history_123
 ```
 ## <h1> Indexes Applied to optimize database</h1>
 -- speed up queries that filter or join the Transaction model based on the user field
+```bash
 CREATE INDEX idx_transaction_user ON transactions_transaction(user_id);
-
+```
 --  improve the speed of queries filtering by transaction_type
 Retrieving all deposits or withdrawals from the Transaction table.
 Running reports or analyses that group or count transactions by type
+```bash
 CREATE INDEX idx_transaction_type ON transactions_transaction(transaction_type);
-
---  This index is crucial for speeding up queries that filter by the user's email address
+```
+--  Index for speeding up queries that filter by the user's email address
+```bash
 CREATE INDEX idx_user_email ON transactions_user(email);
-
+```
 ## <h1> Throttle Rate Limits</h1>
 API calls have been limited for logins and sigups at a daily rate
         'anon': '40/day', 
@@ -132,6 +135,7 @@ API calls have been limited for logins and sigups at a daily rate
 1. Signing up:
 <p><b>POST:http://localhost:8000/api/register/</b></p>
     example raw payload:
+    
     {
         "username": "paul",
         "email":"paul@abc.com",
@@ -142,7 +146,8 @@ API calls have been limited for logins and sigups at a daily rate
 
 2. Logging in:
 <p><b>POST:http://localhost:8000/api/login/</b></p>
-    example raw payload:
+     example raw payload:
+     
     {
         "username_or_email": "username",
         "password":"Password35$"
@@ -151,18 +156,21 @@ API calls have been limited for logins and sigups at a daily rate
 3. Refresh Token:
 <p><b>POST:http://localhost:8000/api/token/refresh/</b></p>
     example raw payload:
+    
     {
         "token":"TOKEN-ABC"
     }
 
 4. Get Account Details:
 <p><b>GET: http://localhost:8000/api/account/</b></p>
+
     Headers: Authorization: Bearer <your_jwt_access_token>
     All users start with 1000.0
 
 5.Create a Transaction (Deposit/Withdrawal):
 <p><b>POST: http://localhost:8000/api/transaction/</b></p>
-    example raw payload:
+example raw payload:
+
     Deposit
     {
     "transaction_type": "deposit",
@@ -177,6 +185,7 @@ API calls have been limited for logins and sigups at a daily rate
 
 6.Get Transaction History:
 <p><b>GET: http://localhost:8000/api/transactions/</b></p>
+
 Authorization: Bearer <your_jwt_access_token>
 
 
