@@ -147,27 +147,26 @@ class TransactionView(generics.CreateAPIView):
         Handles user creation and associated account creation.
         """
         try:
-            user = serializer.save()
-            print(f"User created: {user.username}")
+           transaction_instance = serializer.save(user=self.request.user)
 
-            if not Account.objects.filter(user=user).exists():
-                Account.objects.create(user=user)
-                print(f"Account created for user: {user.username}")
+           print(f"Transaction created for user: {self.request.user.username}")
 
-            validated = serializer.validated_data
-            transaction_data = {k: v for k, v in validated.items() if k not in ['amount', 'transaction_type']}
+           validated = serializer.validated_data
+           transaction_data = {
+                k: v for k, v in validated.items() if k not in ['amount', 'transaction_type']
+            }
 
-            transaction.on_commit(lambda: process_transaction.delay(
-                user.id,
+            # Schedule async processing after commit
+           transaction.on_commit(lambda: process_transaction.delay(
+                self.request.user.id,
                 validated['amount'],
                 validated['transaction_type'],
                 transaction_data
             ))
 
         except Exception as e:
-            print(f"Error during user creation: {e}")
-            raise ValidationError(f"Failed to create user: {str(e)}") from e
-
+            print(f"Error during transaction creation: {e}")
+            raise ValidationError(f"Failed to create transaction: {str(e)}") from e
 
 class TransactionHistoryView(generics.ListAPIView):
     """
