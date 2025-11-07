@@ -18,6 +18,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
+from transactions.tasks import process_transaction
 
 # Local imports
 from .serializers import UserSerializer, TransactionSerializer, AccountSerializer
@@ -140,25 +141,33 @@ class TransactionView(generics.CreateAPIView):
     queryset = Transaction.objects.all() # pylint: disable=no-member
     serializer_class = TransactionSerializer
 
+    @transaction.atomic
     def perform_create(self, serializer):
         """
-        Performs the transaction, adjusting account balance.
+        Handles user creation and associated account creation.
         """
-        user = self.request.user
-        with transaction.atomic():
-            # Ensure account selection is within the transaction
-            account = Account.objects.select_for_update().get(user=user) # pylint: disable=no-member
+        try:
+            user = serializer.save()
+            print(f"User created: {user.username}")
 
-            amount = serializer.validated_data['amount']
-            if serializer.validated_data['transaction_type'] == 'withdrawal':
-                if account.balance < amount:
-                    raise ValidationError("Insufficient balance for withdrawal.")
-                account.balance = F('balance') - amount
-            else:
-                account.balance = F('balance') + amount
-            account.save()
+            if not Account.objects.filter(user=user).exists():
+                Account.objects.create(user=user)
+                print(f"Account created for user: {user.username}")
 
-            serializer.save(user=user)
+            validated = serializer.validated_data
+            transaction_data = {k: v for k, v in validated.items() if k not in ['amount', 'transaction_type']}
+
+            transaction.on_commit(lambda: process_transaction.delay(
+                user.id,
+                validated['amount'],
+                validated['transaction_type'],
+                transaction_data
+            ))
+
+        except Exception as e:
+            print(f"Error during user creation: {e}")
+            raise ValidationError(f"Failed to create user: {str(e)}") from e
+
 
 class TransactionHistoryView(generics.ListAPIView):
     """
