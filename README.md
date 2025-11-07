@@ -113,13 +113,12 @@ If this repository includes helper scripts (for example `scripts/start.sh`), run
 
 Make the script executable and run it:
 ```bash
-chmod +x ./scripts/start.sh
-./scripts/start.sh
+chmod +x ./start_services.sh
 ```
 
 Or run with bash without changing permissions:
 ```bash
-bash ./scripts/start.sh
+bash ./start_services.sh
 ```
 
 If the script lives at a different path, replace `./scripts/start.sh` with the correct relative path.
