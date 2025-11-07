@@ -107,6 +107,26 @@ Access the server at: [http://localhost:8000/](http://localhost:8000/)
 
 ---
 
+### Optional: Run helper bash script(s)
+
+If this repository includes helper scripts (for example `scripts/start.sh`), run them as follows:
+
+Make the script executable and run it:
+```bash
+chmod +x ./scripts/start.sh
+./scripts/start.sh
+```
+
+Or run with bash without changing permissions:
+```bash
+bash ./scripts/start.sh
+```
+
+If the script lives at a different path, replace `./scripts/start.sh` with the correct relative path.
+ // ...existing code...
+```// filepath: /home/andrew/transactionsimulation/README.md
+// ...existing code...
+
 ## Redis Usage
 
 Start the Redis CLI:
