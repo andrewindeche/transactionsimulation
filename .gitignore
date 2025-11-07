@@ -14,3 +14,4 @@ virtual
 */migrations/*.py
 transaction_simulation/settings.py
 .vscode/settings.json
+.venv/
