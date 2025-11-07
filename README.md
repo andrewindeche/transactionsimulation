@@ -1,193 +1,238 @@
-# transactionsimulation
-|Tool                | Description                    | Tags for tools used                                                                                               |
-| ------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------- |
-| 1.GitHub| Version Control| [Version-Control]; [Repo];|
-| 2.Django |  Python Based Backend Framework| [python]; [Django];|
-| 3.PostgresQl | Relational Database| [Relational Integrity]; [Database];|
-| 4.Virtual env | Package manager| [Virtual Environment];[Dependency];|
-| 5.Redis | in-memory Cache Manager| [Cache Manager];|
+# Transaction Simulation
 
-## <h1> Description</h1>
-<p>The aim of the project is to build a transaction simulation api that authenticates users, enables user to transact,view balances and retrieve transaction history </p>
+## Table of Contents
+- [Description](#description)
+- [Features](#features)
+- [Tools Used](#tools-used)
+- [Setup Instructions](#setup-instructions)
+- [Database Setup](#database-setup)
+- [Running the Project](#running-the-project)
+- [Redis Usage](#redis-usage)
+- [Database Indexes](#database-indexes)
+- [Throttle Rate Limits](#throttle-rate-limits)
+- [API Endpoints](#api-endpoints)
+- [Author](#author)
 
-## <h1> Features</h1>
-<ul>
-<li>Admin dashboard to view lists of users and transactions,blacklist tokens</li>
-<li>Redis for cache management of transactions</li>
-<li>Throttler to limit sign up and login attempts and pagination</li>
-</ul>
+---
 
-## <h1> Set up Instructions</h1>
-<p><b>Github</b></p>
-<ul>
-<li> Download the Zip file from the code tab on github to get the project Zip files (Recommended)</li>
-<li> Clone the project using 'git clone https://github.com/andrewindeche/transactionsimulation.git'.</li>
-<li> Unzip the file and add the Project folder to your IDE/Compiler</li>
-</ul>
+## Description
 
-<p><b>Django version</b></p>
-Python 3.13.2 Django==5.1.6
+The aim of the project is to build a transaction simulation API that authenticates users, enables users to transact, view balances, and retrieve transaction history.
 
-1. Create an .env environment on the Django root folder and add the recessary environment variables. 
-Use <b>env.example</b> as a guide for environment variables.
+---
 
-CREATE DATABASE database;
+## Features
 
-CREATE USER newuser WITH PASSWORD 'newpassword';
+- Admin dashboard to view lists of users and transactions, blacklist tokens
+- Redis for cache management of transactions
+- Throttler to limit sign up and login attempts and pagination
 
-GRANT ALL PRIVILEGES ON DATABASE database TO myuser;
+---
 
+## Tools Used
 
-9. Access the Django development server on:
+| Tool         | Description                       | Tags                                      |
+| ------------ | --------------------------------- | ------------------------------------------ |
+| GitHub       | Version Control                   | [Version-Control], [Repo]                  |
+| Django       | Python Based Backend Framework    | [python], [Django]                         |
+| PostgreSQL   | Relational Database               | [Relational Integrity], [Database]         |
+| Virtualenv   | Python Environment Manager        | [Virtual Environment], [Dependency]        |
+| Redis        | In-memory Cache Manager           | [Cache Manager]                            |
 
-<b>http://localhost:8000/</b> 
+---
 
+## Setup Instructions
 
-<p><b>Django</b></p>
+### 1. Clone the Repository
 
-<p>The project uses virtual env, django and postgresql backend</p>
+```bash
+git clone https://github.com/andrewindeche/transactionsimulation.git
+```
+Or download the ZIP file from GitHub and unzip it.
 
-1. Install virtual using the command 
+### 2. Create and Activate Virtual Environment
 
 ```bash
 python3.13 -m venv virtual
-```
-
-2. Activate your virtual enviromnment
-
-```bash
 source virtual/bin/activate
 ```
 
-3. Navigate to your Django project and use  in  the directory path: <b>backend\requirements.txt</b> to install the required django dependencies 
+### 3. Install Dependencies
+
+Navigate to your Django project directory and install dependencies:
 
 ```bash
 pip3 install -r requirements.txt
 ```
 
-4. Create an .env on the Django root folder and add the recessary environment variables. 
+### 4. Configure Environment Variables
 
-Use (env.example) as a guide for environment variables </li>
+Create a `.env` file in the Django root folder. Use `env.example` as a guide for required variables.
 
-5. Create a Super User using 
+---
 
-```bash
-python3 manage.py createsuperuser
+## Database Setup
+
+Set up your PostgreSQL database:
+
+```sql
+CREATE DATABASE database;
+CREATE USER newuser WITH PASSWORD 'newpassword';
+GRANT ALL PRIVILEGES ON DATABASE database TO newuser;
 ```
 
-6. Migrate your DB using 
+---
+
+## Running the Project
+
+### 1. Migrate the Database
 
 ```bash
 python3 manage.py migrate
 ```
 
-7. To run the project use: 
+### 2. Create a Superuser
 
 ```bash
- python3 manage.py runserver
+python3 manage.py createsuperuser
 ```
 
-8. Open the server using the link : 
+### 3. Start the Development Server
 
-<b>http://localhost:8000</b>
+```bash
+python3 manage.py runserver
+```
 
-9. Open the Redis server using :
+Access the server at: [http://localhost:8000/](http://localhost:8000/)
+
+---
+
+## Redis Usage
+
+Start the Redis CLI:
 
 ```bash
 redis-cli
 ```
 
-Check for cached keys
+Check for cached keys:
 
 ```bash
 KEYS transaction_history_*
 ```
-Inspect cached data
+
+Inspect cached data:
 
 ```bash
 GET transaction_history_123
 ```
-## <h1> Indexes Applied to optimize database</h1>
--- speed up queries that filter or join the Transaction model based on the user field
-```bash
+
+---
+
+## Database Indexes
+
+To optimize database queries, apply the following indexes:
+
+```sql
+-- Speed up queries filtering/joining Transaction by user
 CREATE INDEX idx_transaction_user ON transactions_transaction(user_id);
-```
---  improve the speed of queries filtering by transaction_type
-Retrieving all deposits or withdrawals from the Transaction table.
-Running reports or analyses that group or count transactions by type
-```bash
+
+-- Improve speed for queries filtering by transaction_type
 CREATE INDEX idx_transaction_type ON transactions_transaction(transaction_type);
-```
---  Index for speeding up queries that filter by the user's email address
-```bash
+
+-- Speed up queries filtering by user's email address
 CREATE INDEX idx_user_email ON transactions_user(email);
 ```
-## <h1> Throttle Rate Limits</h1>
-API calls have been limited for logins and sigups at a daily rate
-        'anon': '40/day', 
-        'user': '40/day',
-        'login': '50/minute',
-        'signup': '60/minute'
 
+---
 
-## <h1> Endpoints</h1>
+## Throttle Rate Limits
 
-1. Signing up:
-<p><b>POST:http://localhost:8000/api/register/</b></p>
-    example raw payload:
-    
-    {
-        "username": "paul",
-        "email":"paul@abc.com",
-        "first_name":"Paul",
-        "last_name":"Walker",
-        "password":"Complexpasword#"
-     }
+API calls are limited as follows:
 
-2. Logging in:
-<p><b>POST:http://localhost:8000/api/login/</b></p>
-     example raw payload:
-     
-    {
-        "username_or_email": "username",
-        "password":"Password35$"
-    }
+- Anonymous: `40/day`
+- User: `40/day`
+- Login: `50/minute`
+- Signup: `60/minute`
 
-3. Refresh Token:
-<p><b>POST:http://localhost:8000/api/token/refresh/</b></p>
-    example raw payload:
-    
-    {
-        "token":"TOKEN-ABC"
-    }
+---
 
-4. Get Account Details:
-<p><b>GET: http://localhost:8000/api/account/</b></p>
+## API Endpoints
 
-    Headers: Authorization: Bearer <your_jwt_access_token>
-    All users start with 1000.0
+### 1. Sign Up
 
-5.Create a Transaction (Deposit/Withdrawal):
-<p><b>POST: http://localhost:8000/api/transaction/</b></p>
-example raw payload:
+**POST** `http://localhost:8000/api/register/`
 
-    Deposit
-    {
+Example payload:
+```json
+{
+    "username": "paul",
+    "email": "paul@abc.com",
+    "first_name": "Paul",
+    "last_name": "Walker",
+    "password": "Complexpasword#"
+}
+```
+
+### 2. Login
+
+**POST** `http://localhost:8000/api/login/`
+
+Example payload:
+```json
+{
+    "username_or_email": "username",
+    "password": "Password35$"
+}
+```
+
+### 3. Refresh Token
+
+**POST** `http://localhost:8000/api/token/refresh/`
+
+Example payload:
+```json
+{
+    "token": "TOKEN-ABC"
+}
+```
+
+### 4. Get Account Details
+
+**GET** `http://localhost:8000/api/account/`
+
+Headers: `Authorization: Bearer <your_jwt_access_token>`
+
+All users start with a balance of `1000.0`.
+
+### 5. Create a Transaction (Deposit/Withdrawal)
+
+**POST** `http://localhost:8000/api/transaction/`
+
+Deposit example:
+```json
+{
     "transaction_type": "deposit",
     "amount": 100.50
-    }
+}
+```
 
-    Withdrawal
-    {
+Withdrawal example:
+```json
+{
     "transaction_type": "withdrawal",
     "amount": 50.00
-    }
+}
+```
 
-6.Get Transaction History:
-<p><b>GET: http://localhost:8000/api/transactions/</b></p>
+### 6. Get Transaction History
 
-Authorization: Bearer <your_jwt_access_token>
+**GET** `http://localhost:8000/api/transactions/`
 
+Headers: `Authorization: Bearer <your_jwt_access_token>`
 
-## <h1> Author </h1>
-Built by <b>Andrew Indeche</b>
+---
+
+## Author
+
+Built by **Andrew Indeche**
